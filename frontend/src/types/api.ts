@@ -1,4 +1,4 @@
-export type Role = "EMPLOYEE" | "ADMIN";
+export type Role = "EMPLOYEE" | "MANAGER" | "ADMIN";
 
 export interface EmployeeResponse {
   id: number;
@@ -28,4 +28,26 @@ export interface ErrorResponse {
 export interface FieldError {
   field: string;
   message: string;
+}
+
+export interface AttendanceRecordResponse {
+  id: number;
+  employeeId: number;
+  date: string;
+  clockIn: string;
+  clockOut: string | null;
+  workingMinutes: number | null;
+  overtimeMinutes: number | null;
+}
+
+export interface MonthlySummaryResponse {
+  yearMonth: string;
+  totalWorkingDays: number;
+  totalActualMinutes: number;
+  totalOvertimeMinutes: number;
+}
+
+export interface UpdateRecordRequest {
+  clockIn: string;
+  clockOut: string | null;
 }

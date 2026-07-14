@@ -8,6 +8,8 @@ export function Navigation() {
 
   if (!user) return null;
 
+  const isManagerOrAdmin = user.role === "MANAGER" || user.role === "ADMIN";
+
   return (
     <nav className="bg-white shadow">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -17,26 +19,29 @@ export function Navigation() {
               勤怠管理
             </Link>
             <Link href="/" className="text-gray-600 hover:text-gray-900">
-              打刻
+              ホーム
             </Link>
-            <Link href="/history" className="text-gray-600 hover:text-gray-900">
-              履歴
+            <Link
+              href="/attendance"
+              className="text-gray-600 hover:text-gray-900"
+            >
+              勤怠履歴
             </Link>
+            {isManagerOrAdmin && (
+              <Link
+                href="/admin/attendance"
+                className="text-gray-600 hover:text-gray-900"
+              >
+                社員勤怠一覧
+              </Link>
+            )}
             {user.role === "ADMIN" && (
-              <>
-                <Link
-                  href="/admin/employees"
-                  className="text-gray-600 hover:text-gray-900"
-                >
-                  社員管理
-                </Link>
-                <Link
-                  href="/admin/attendance"
-                  className="text-gray-600 hover:text-gray-900"
-                >
-                  勤怠管理
-                </Link>
-              </>
+              <Link
+                href="/admin/employees"
+                className="text-gray-600 hover:text-gray-900"
+              >
+                社員管理
+              </Link>
             )}
           </div>
           <div className="flex items-center space-x-4">
