@@ -4,7 +4,6 @@ import { useState } from "react";
 import type { FormEvent } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { useRouter } from "next/navigation";
-import { withBasePath } from "@/lib/api-client";
 import { ApiError } from "@/lib/api-client";
 
 export default function LoginPage() {
@@ -37,7 +36,7 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await login({ email, password });
-      router.replace(withBasePath("/"));
+      router.replace("/");
     } catch (err) {
       if (err instanceof ApiError) {
         setError(err.message);

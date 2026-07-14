@@ -1,14 +1,15 @@
 const SAGEMAKER_BASE_PATH = "/codeeditor/default/absports/3000";
 
-export function withBasePath(path: string): string {
+function getBasePath(): string {
   if (typeof window === "undefined") {
-    return path;
+    return "";
   }
   const isSagemaker = window.location.pathname.startsWith("/codeeditor/");
-  if (isSagemaker) {
-    return `${SAGEMAKER_BASE_PATH}${path}`;
-  }
-  return path;
+  return isSagemaker ? SAGEMAKER_BASE_PATH : "";
+}
+
+export function withBasePath(path: string): string {
+  return `${getBasePath()}${path}`;
 }
 
 export class ApiError extends Error {

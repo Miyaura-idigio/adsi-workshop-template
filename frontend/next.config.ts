@@ -1,9 +1,12 @@
 import type { NextConfig } from "next";
 
 const isSagemaker = process.env.SAGEMAKER === "1";
+const basePath = isSagemaker ? "/codeeditor/default/absports/3000" : "";
 
 const nextConfig: NextConfig = {
-  ...(isSagemaker ? { basePath: "/codeeditor/default/absports/3000" } : {}),
+  basePath: basePath || undefined,
+  assetPrefix: basePath || undefined,
+  ...(isSagemaker ? { skipTrailingSlashRedirect: true } : {}),
   rewrites: async () => [
     {
       source: "/api/:path*",

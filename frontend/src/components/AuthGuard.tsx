@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import type { ReactNode } from "react";
 import type { Role } from "@/types/api";
-import { withBasePath } from "@/lib/api-client";
 
 interface AuthGuardProps {
   children: ReactNode;
@@ -18,7 +17,7 @@ export function AuthGuard({ children, requiredRole }: AuthGuardProps) {
 
   useEffect(() => {
     if (!loading && !user) {
-      router.replace(withBasePath("/login"));
+      router.replace("/login");
     }
   }, [user, loading, router]);
 
