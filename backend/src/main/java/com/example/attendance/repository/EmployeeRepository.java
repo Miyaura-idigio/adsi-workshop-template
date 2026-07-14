@@ -15,7 +15,7 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
     boolean existsByEmailAndIdNot(String email, Long id);
 
-    List<Employee> findByActiveTrueOrderByEmployeeCodeAsc();
+    List<Employee> findAllByOrderByEmployeeCodeAsc();
 
     @Query("SELECT MAX(e.employeeCode) FROM Employee e")
     Optional<String> findMaxEmployeeCode();

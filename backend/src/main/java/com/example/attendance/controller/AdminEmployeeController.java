@@ -44,8 +44,8 @@ public class AdminEmployeeController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deactivate(@PathVariable Long id) {
-        employeeService.deactivate(id);
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
+        employeeService.delete(id);
         return ResponseEntity.noContent().build();
     }
 }

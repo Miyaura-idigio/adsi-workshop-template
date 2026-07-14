@@ -28,7 +28,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public List<EmployeeResponse> findAll() {
-        return employeeRepository.findByActiveTrueOrderByEmployeeCodeAsc().stream()
+        return employeeRepository.findAllByOrderByEmployeeCodeAsc().stream()
                 .map(EmployeeResponse::from)
                 .toList();
     }
@@ -85,12 +85,11 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     @Transactional
-    public void deactivate(Long id) {
+    public void delete(Long id) {
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("社員が見つかりません (ID: " + id + ")"));
 
-        employee.setActive(false);
-        employeeRepository.save(employee);
+        employeeRepository.delete(employee);
     }
 
     private String generateNextEmployeeCode() {

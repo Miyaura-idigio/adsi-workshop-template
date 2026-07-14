@@ -2,7 +2,7 @@
 
 ## 概要
 
-管理者による社員の登録・編集・論理削除を実装する。
+管理者による社員の登録・編集・削除を実装する。
 ADMIN ロール専用の管理機能。
 
 ## 依存
@@ -39,7 +39,7 @@ ADMIN ロール専用の管理機能。
 | POST | /api/admin/employees | 社員登録 | ADMIN |
 | GET | /api/admin/employees/{id} | 社員詳細 | ADMIN |
 | PUT | /api/admin/employees/{id} | 社員更新 | ADMIN |
-| DELETE | /api/admin/employees/{id} | 社員論理削除 | ADMIN |
+| DELETE | /api/admin/employees/{id} | 社員削除 | ADMIN |
 
 ### 画面
 
@@ -55,7 +55,7 @@ ADMIN ロール専用の管理機能。
 |---|--------|------|
 | F-9 | 社員登録 | 氏名・メール・パスワード・ロールで社員作成（employeeCode 自動採番） |
 | F-10 | 社員編集 | 社員情報の更新 |
-| F-11 | 社員削除（論理） | active フラグを false にする |
+| F-11 | 社員削除 | 社員を物理削除する |
 
 ## ビジネスルール
 
@@ -64,7 +64,7 @@ ADMIN ロール専用の管理機能。
 | メール一意制約 | 登録・更新時にメールアドレスの重複チェック → 409 |
 | 社員コード自動採番 | EMP001, EMP002, ... 形式。最大値 + 1 |
 | パスワードハッシュ | BCrypt で保存。登録時のみパスワード指定 |
-| 論理削除 | DELETE は active=false にする（物理削除しない） |
+| 物理削除 | DELETE で社員を削除する |
 | 楽観ロック | @Version による並行更新検出 |
 
 ## テスト観点
@@ -77,9 +77,8 @@ ADMIN ロール専用の管理機能。
 - [ ] EmployeeService.update: 正常更新
 - [ ] EmployeeService.update: 存在しない ID → 404
 - [ ] EmployeeService.update: メール重複（他社員と） → 409
-- [ ] EmployeeService.deactivate: active=false に更新
-- [ ] EmployeeService.deactivate: 存在しない ID → 404
-- [ ] EmployeeService.findAll: active=true のみ返す
+- [ ] EmployeeService.delete: 正常削除
+- [ ] EmployeeService.delete: 存在しない ID → 404
 - [ ] EmployeeService.findById: 存在する → Employee 返却
 - [ ] EmployeeService.findById: 存在しない → 404
 - [ ] AdminEmployeeController: ADMIN → 200
@@ -89,8 +88,8 @@ ADMIN ロール専用の管理機能。
 
 ### Frontend
 
-- [ ] S-6: 社員一覧テーブル表示（コード/氏名/メール/ロール/状態）
-- [ ] S-6: 削除ボタン → 確認ダイアログ → 論理削除
+- [ ] S-6: 社員一覧テーブル表示（コード/氏名/メール/ロール）
+- [ ] S-6: 削除ボタン → 確認ダイアログ → 削除
 - [ ] S-7: 入力バリデーション（氏名必須、メール形式、パスワード8文字以上）
 - [ ] S-7: 登録成功 → 一覧へ遷移
 - [ ] S-7: メール重複 → エラーメッセージ
@@ -109,7 +108,7 @@ ADMIN ロール専用の管理機能。
 
 1. EmployeeService テスト → interface 定義
 2. EmployeeService 実装（create — 自動採番 + BCrypt）
-3. EmployeeService 実装（update / deactivate / find）
+3. EmployeeService 実装（update / delete / find）
 4. AdminEmployeeController テスト → 実装
 5. 統合テスト
 6. Frontend: S-6 社員管理一覧

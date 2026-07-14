@@ -6,7 +6,6 @@ export interface EmployeeResponse {
   name: string;
   email: string;
   role: Role;
-  active: boolean;
   version: number;
 }
 

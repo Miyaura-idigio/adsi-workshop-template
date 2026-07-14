@@ -9,7 +9,6 @@ public record EmployeeResponse(
         String name,
         String email,
         Role role,
-        boolean active,
         Long version
 ) {
     public static EmployeeResponse from(Employee employee) {
@@ -19,7 +18,6 @@ public record EmployeeResponse(
                 employee.getName(),
                 employee.getEmail(),
                 employee.getRole(),
-                employee.isActive(),
                 employee.getVersion()
         );
     }

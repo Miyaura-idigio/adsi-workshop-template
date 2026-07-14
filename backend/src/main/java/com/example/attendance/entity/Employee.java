@@ -36,9 +36,6 @@ public class Employee {
     @Column(nullable = false, length = 20)
     private Role role;
 
-    @Column(nullable = false)
-    private boolean active;
-
     @Version
     @Column(nullable = false)
     private Long version;
@@ -53,7 +50,6 @@ public class Employee {
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
-        active = true;
     }
 
     @PreUpdate

@@ -49,8 +49,7 @@ class AuthServiceImplTest {
                 .name("管理者")
                 .email("admin@example.com")
                 .role(Role.ADMIN)
-                .active(true)
-                .build();
+                                .build();
 
         Authentication authentication = mock(Authentication.class);
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
@@ -95,8 +94,7 @@ class AuthServiceImplTest {
                 .name("管理者")
                 .email("admin@example.com")
                 .role(Role.ADMIN)
-                .active(true)
-                .build();
+                                .build();
         when(employeeRepository.findByEmail("admin@example.com"))
                 .thenReturn(Optional.of(employee));
 

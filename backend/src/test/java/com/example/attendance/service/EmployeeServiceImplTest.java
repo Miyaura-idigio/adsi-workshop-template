@@ -23,7 +23,6 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -122,7 +121,7 @@ class EmployeeServiceImplTest {
         // Arrange
         var employee = Employee.builder()
                 .id(1L).employeeCode("EMP001").name("旧名前")
-                .email("old@example.com").role(Role.EMPLOYEE).active(true).version(0L)
+                .email("old@example.com").role(Role.EMPLOYEE).version(0L)
                 .build();
         var request = new UpdateEmployeeRequest("新名前", "new@example.com", Role.ADMIN, 0L);
 
@@ -157,7 +156,7 @@ class EmployeeServiceImplTest {
         // Arrange
         var employee = Employee.builder()
                 .id(1L).employeeCode("EMP001").name("名前")
-                .email("me@example.com").role(Role.EMPLOYEE).active(true).version(0L)
+                .email("me@example.com").role(Role.EMPLOYEE).version(0L)
                 .build();
         var request = new UpdateEmployeeRequest("名前", "other@example.com", Role.EMPLOYEE, 0L);
 
@@ -170,49 +169,46 @@ class EmployeeServiceImplTest {
     }
 
     @Test
-    @DisplayName("deactivate: active=falseに更新")
-    void deactivate_existingId_setsActiveFalse() {
+    @DisplayName("delete: 物理削除される")
+    void delete_existingId_deletesEmployee() {
         // Arrange
         var employee = Employee.builder()
                 .id(1L).employeeCode("EMP001").name("名前")
-                .email("e@example.com").role(Role.EMPLOYEE).active(true).version(0L)
+                .email("e@example.com").role(Role.EMPLOYEE).version(0L)
                 .build();
         when(employeeRepository.findById(1L)).thenReturn(Optional.of(employee));
-        when(employeeRepository.save(any(Employee.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
         // Act
-        employeeService.deactivate(1L);
+        employeeService.delete(1L);
 
         // Assert
-        ArgumentCaptor<Employee> captor = ArgumentCaptor.forClass(Employee.class);
-        verify(employeeRepository).save(captor.capture());
-        assertThat(captor.getValue().isActive()).isFalse();
+        verify(employeeRepository).delete(employee);
     }
 
     @Test
-    @DisplayName("deactivate: 存在しないIDで404エラー")
-    void deactivate_nonExistingId_throwsResourceNotFoundException() {
+    @DisplayName("delete: 存在しないIDで404エラー")
+    void delete_nonExistingId_throwsResourceNotFoundException() {
         // Arrange
         when(employeeRepository.findById(999L)).thenReturn(Optional.empty());
 
         // Act & Assert
-        assertThatThrownBy(() -> employeeService.deactivate(999L))
+        assertThatThrownBy(() -> employeeService.delete(999L))
                 .isInstanceOf(ResourceNotFoundException.class);
     }
 
     @Test
-    @DisplayName("findAll: active=trueのみ返す")
-    void findAll_returnsOnlyActiveEmployees() {
+    @DisplayName("findAll: 全社員を返す")
+    void findAll_returnsAllEmployees() {
         // Arrange
         var emp1 = Employee.builder()
                 .id(1L).employeeCode("EMP001").name("社員1")
-                .email("emp1@example.com").role(Role.EMPLOYEE).active(true)
+                .email("emp1@example.com").role(Role.EMPLOYEE)
                 .build();
         var emp2 = Employee.builder()
                 .id(2L).employeeCode("EMP002").name("社員2")
-                .email("emp2@example.com").role(Role.ADMIN).active(true)
+                .email("emp2@example.com").role(Role.ADMIN)
                 .build();
-        when(employeeRepository.findByActiveTrueOrderByEmployeeCodeAsc()).thenReturn(List.of(emp1, emp2));
+        when(employeeRepository.findAllByOrderByEmployeeCodeAsc()).thenReturn(List.of(emp1, emp2));
 
         // Act
         List<EmployeeResponse> result = employeeService.findAll();
@@ -228,7 +224,7 @@ class EmployeeServiceImplTest {
         // Arrange
         var employee = Employee.builder()
                 .id(1L).employeeCode("EMP001").name("社員1")
-                .email("emp1@example.com").role(Role.EMPLOYEE).active(true)
+                .email("emp1@example.com").role(Role.EMPLOYEE)
                 .build();
         when(employeeRepository.findById(1L)).thenReturn(Optional.of(employee));
 

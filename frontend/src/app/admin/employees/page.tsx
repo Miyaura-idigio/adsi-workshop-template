@@ -73,9 +73,6 @@ function EmployeeList() {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                 ロール
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                状態
-              </th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">
                 操作
               </th>
@@ -102,11 +99,6 @@ function EmployeeList() {
                     }`}
                   >
                     {emp.role === "ADMIN" ? "管理者" : "一般"}
-                  </span>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm">
-                  <span className="px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                    有効
                   </span>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-right text-sm space-x-2">
