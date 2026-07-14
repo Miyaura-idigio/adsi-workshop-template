@@ -19,6 +19,9 @@ spring:
 server:
   servlet:
     context-path: /api
+    session:
+      cookie:
+        path: /
     encoding:
       charset: UTF-8
       force: true

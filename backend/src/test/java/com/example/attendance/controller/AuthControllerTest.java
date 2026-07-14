@@ -12,6 +12,7 @@ import org.springframework.mock.web.MockHttpSession;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -86,7 +87,7 @@ class AuthControllerTest {
     void logout_authenticated_returns204() throws Exception {
         MockHttpSession session = loginSession();
 
-        mockMvc.perform(post("/auth/logout").session(session))
+        mockMvc.perform(post("/auth/logout").session(session).with(csrf()))
                 .andExpect(status().isNoContent());
     }
 

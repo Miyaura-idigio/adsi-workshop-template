@@ -36,6 +36,12 @@ public class Employee {
     @Column(nullable = false, length = 20)
     private Role role;
 
+    @Column(name = "manager_id")
+    private Long managerId;
+
+    @Column(nullable = false)
+    private boolean active;
+
     @Version
     @Column(nullable = false)
     private Long version;
