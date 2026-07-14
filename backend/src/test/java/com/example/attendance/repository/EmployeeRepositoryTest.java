@@ -30,8 +30,7 @@ class EmployeeRepositoryTest {
                 .email("test@example.com")
                 .password("$2a$10$encodedpassword")
                 .role(Role.EMPLOYEE)
-                .active(true)
-                .version(0L)
+                                .version(0L)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();
@@ -62,8 +61,7 @@ class EmployeeRepositoryTest {
                 .email("exists@example.com")
                 .password("$2a$10$encodedpassword")
                 .role(Role.EMPLOYEE)
-                .active(true)
-                .version(0L)
+                                .version(0L)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();

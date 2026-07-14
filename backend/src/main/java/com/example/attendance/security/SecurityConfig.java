@@ -44,14 +44,20 @@ public class SecurityConfig {
                         .requestMatchers("/auth/login").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/admin/attendance/**").hasAnyRole("MANAGER", "ADMIN")
+                        .requestMatchers("/admin/employees/**").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint((req, res, authEx) -> {
                             res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                            res.setContentType("application/json");
+                            res.setContentType("application/json;charset=UTF-8");
                             res.getWriter().write("{\"status\":401,\"message\":\"認証が必要です\"}");
+                        })
+                        .accessDeniedHandler((req, res, accessEx) -> {
+                            res.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                            res.setContentType("application/json;charset=UTF-8");
+                            res.getWriter().write("{\"status\":403,\"message\":\"アクセス権限がありません\"}");
                         })
                 )
                 .headers(headers -> headers.frameOptions(frame -> frame.disable()))

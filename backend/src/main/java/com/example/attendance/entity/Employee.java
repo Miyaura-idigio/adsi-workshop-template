@@ -56,7 +56,6 @@ public class Employee {
     protected void onCreate() {
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
-        active = true;
     }
 
     @PreUpdate
