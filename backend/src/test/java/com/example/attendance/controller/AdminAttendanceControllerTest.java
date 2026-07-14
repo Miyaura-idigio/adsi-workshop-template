@@ -44,7 +44,7 @@ class AdminAttendanceControllerTest {
     @WithMockUser(username = "admin@example.com", roles = "ADMIN")
     void records_asAdmin_returns200() throws Exception {
         when(authService.getCurrentUser("admin@example.com"))
-                .thenReturn(new EmployeeResponse(1L, "ADM001", "管理者", "admin@example.com", Role.ADMIN, true));
+                .thenReturn(new EmployeeResponse(1L, "ADM001", "管理者", "admin@example.com", Role.ADMIN, 1L));
         when(attendanceService.getAdminMonthlyRecords(2L, YearMonth.of(2026, 7), 1L))
                 .thenReturn(List.of());
 
@@ -60,7 +60,7 @@ class AdminAttendanceControllerTest {
     @WithMockUser(username = "manager@example.com", roles = "MANAGER")
     void records_asManager_returns200() throws Exception {
         when(authService.getCurrentUser("manager@example.com"))
-                .thenReturn(new EmployeeResponse(5L, "MGR001", "マネージャー", "manager@example.com", Role.MANAGER, true));
+                .thenReturn(new EmployeeResponse(5L, "MGR001", "マネージャー", "manager@example.com", Role.MANAGER, 1L));
         when(attendanceService.getAdminMonthlyRecords(2L, YearMonth.of(2026, 7), 5L))
                 .thenReturn(List.of());
 
@@ -94,7 +94,7 @@ class AdminAttendanceControllerTest {
     @WithMockUser(username = "admin@example.com", roles = "ADMIN")
     void summary_asAdmin_returns200() throws Exception {
         when(authService.getCurrentUser("admin@example.com"))
-                .thenReturn(new EmployeeResponse(1L, "ADM001", "管理者", "admin@example.com", Role.ADMIN, true));
+                .thenReturn(new EmployeeResponse(1L, "ADM001", "管理者", "admin@example.com", Role.ADMIN, 1L));
         when(attendanceService.getAdminMonthlySummary(2L, YearMonth.of(2026, 7), 1L))
                 .thenReturn(new MonthlySummaryResponse("2026-07", 10, 4800, 0));
 

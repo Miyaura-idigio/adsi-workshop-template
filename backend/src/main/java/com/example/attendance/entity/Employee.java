@@ -39,9 +39,6 @@ public class Employee {
     @Column(name = "manager_id")
     private Long managerId;
 
-    @Column(nullable = false)
-    private boolean active;
-
     @Version
     @Column(nullable = false)
     private Long version;

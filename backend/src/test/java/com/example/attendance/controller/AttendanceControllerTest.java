@@ -52,7 +52,7 @@ class AttendanceControllerTest {
     @WithMockUser(username = "user@example.com")
     void clockIn_success_returns200() throws Exception {
         when(authService.getCurrentUser("user@example.com"))
-                .thenReturn(new EmployeeResponse(1L, "EMP001", "テスト", "user@example.com", Role.EMPLOYEE, true));
+                .thenReturn(new EmployeeResponse(1L, "EMP001", "テスト", "user@example.com", Role.EMPLOYEE, 1L));
         when(attendanceService.clockIn(1L))
                 .thenReturn(new AttendanceRecordResponse(1L, 1L, LocalDate.now(),
                         LocalDateTime.now(), null, null, null));
@@ -67,7 +67,7 @@ class AttendanceControllerTest {
     @WithMockUser(username = "user@example.com")
     void clockIn_duplicate_returns409() throws Exception {
         when(authService.getCurrentUser("user@example.com"))
-                .thenReturn(new EmployeeResponse(1L, "EMP001", "テスト", "user@example.com", Role.EMPLOYEE, true));
+                .thenReturn(new EmployeeResponse(1L, "EMP001", "テスト", "user@example.com", Role.EMPLOYEE, 1L));
         when(attendanceService.clockIn(1L))
                 .thenThrow(new ConflictException("本日は既に出勤打刻されています"));
 
@@ -81,7 +81,7 @@ class AttendanceControllerTest {
     @WithMockUser(username = "user@example.com")
     void clockOut_success_returns200() throws Exception {
         when(authService.getCurrentUser("user@example.com"))
-                .thenReturn(new EmployeeResponse(1L, "EMP001", "テスト", "user@example.com", Role.EMPLOYEE, true));
+                .thenReturn(new EmployeeResponse(1L, "EMP001", "テスト", "user@example.com", Role.EMPLOYEE, 1L));
         when(attendanceService.clockOut(1L))
                 .thenReturn(new AttendanceRecordResponse(1L, 1L, LocalDate.now(),
                         LocalDateTime.now().minusHours(8), LocalDateTime.now(), 480, 0));
@@ -96,7 +96,7 @@ class AttendanceControllerTest {
     @WithMockUser(username = "user@example.com")
     void records_success_returns200() throws Exception {
         when(authService.getCurrentUser("user@example.com"))
-                .thenReturn(new EmployeeResponse(1L, "EMP001", "テスト", "user@example.com", Role.EMPLOYEE, true));
+                .thenReturn(new EmployeeResponse(1L, "EMP001", "テスト", "user@example.com", Role.EMPLOYEE, 1L));
         when(attendanceService.getMonthlyRecords(1L, YearMonth.of(2026, 7)))
                 .thenReturn(List.of());
 
@@ -110,7 +110,7 @@ class AttendanceControllerTest {
     @WithMockUser(username = "user@example.com")
     void summary_success_returns200() throws Exception {
         when(authService.getCurrentUser("user@example.com"))
-                .thenReturn(new EmployeeResponse(1L, "EMP001", "テスト", "user@example.com", Role.EMPLOYEE, true));
+                .thenReturn(new EmployeeResponse(1L, "EMP001", "テスト", "user@example.com", Role.EMPLOYEE, 1L));
         when(attendanceService.getMonthlySummary(1L, YearMonth.of(2026, 7)))
                 .thenReturn(new MonthlySummaryResponse("2026-07", 10, 4800, 0));
 
@@ -124,7 +124,7 @@ class AttendanceControllerTest {
     @WithMockUser(username = "user@example.com")
     void today_exists_returns200() throws Exception {
         when(authService.getCurrentUser("user@example.com"))
-                .thenReturn(new EmployeeResponse(1L, "EMP001", "テスト", "user@example.com", Role.EMPLOYEE, true));
+                .thenReturn(new EmployeeResponse(1L, "EMP001", "テスト", "user@example.com", Role.EMPLOYEE, 1L));
         when(attendanceService.getTodayRecord(1L))
                 .thenReturn(new AttendanceRecordResponse(1L, 1L, LocalDate.now(),
                         LocalDateTime.now().minusHours(3), null, null, null));
@@ -139,7 +139,7 @@ class AttendanceControllerTest {
     @WithMockUser(username = "user@example.com")
     void today_notExists_returns200Null() throws Exception {
         when(authService.getCurrentUser("user@example.com"))
-                .thenReturn(new EmployeeResponse(1L, "EMP001", "テスト", "user@example.com", Role.EMPLOYEE, true));
+                .thenReturn(new EmployeeResponse(1L, "EMP001", "テスト", "user@example.com", Role.EMPLOYEE, 1L));
         when(attendanceService.getTodayRecord(1L)).thenReturn(null);
 
         mockMvc.perform(get("/attendance/today"))
@@ -151,7 +151,7 @@ class AttendanceControllerTest {
     @WithMockUser(username = "user@example.com")
     void getRecord_success_returns200() throws Exception {
         when(authService.getCurrentUser("user@example.com"))
-                .thenReturn(new EmployeeResponse(1L, "EMP001", "テスト", "user@example.com", Role.EMPLOYEE, true));
+                .thenReturn(new EmployeeResponse(1L, "EMP001", "テスト", "user@example.com", Role.EMPLOYEE, 1L));
         when(attendanceService.getRecord(10L, 1L))
                 .thenReturn(new AttendanceRecordResponse(10L, 1L, LocalDate.of(2026, 7, 13),
                         LocalDateTime.of(2026, 7, 13, 9, 0),
@@ -168,7 +168,7 @@ class AttendanceControllerTest {
     @WithMockUser(username = "user@example.com")
     void updateRecord_success_returns200() throws Exception {
         when(authService.getCurrentUser("user@example.com"))
-                .thenReturn(new EmployeeResponse(1L, "EMP001", "テスト", "user@example.com", Role.EMPLOYEE, true));
+                .thenReturn(new EmployeeResponse(1L, "EMP001", "テスト", "user@example.com", Role.EMPLOYEE, 1L));
         when(attendanceService.updateRecord(eq(10L), any(), eq(1L)))
                 .thenReturn(new AttendanceRecordResponse(10L, 1L, LocalDate.of(2026, 7, 13),
                         LocalDateTime.of(2026, 7, 13, 8, 30),

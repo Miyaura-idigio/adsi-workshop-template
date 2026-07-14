@@ -1,5 +1,16 @@
 # Unit 1: 勤怠ドメイン（打刻・履歴・集計）
 
+## 実装状況: 未着手
+
+Unit 0 で以下の基盤が実装済み:
+
+- [x] `AttendanceRecord` Entity
+- [x] `AttendanceRecordRepository`（findByEmployeeIdAndDate, findByEmployeeIdAndDateBetween）
+- [x] `WorkDuration` Value Object + テスト（休憩控除・残業計算）
+- [x] `V2__create_attendance_records.sql` マイグレーション
+
+本 Unit で実装するもの: Service, Controller, DTO, Frontend 全般
+
 ## 概要
 
 出退勤打刻、勤怠履歴の閲覧、月次集計、打刻修正を実装する。
@@ -7,11 +18,11 @@
 
 ## 依存
 
-- **Unit 0（共通基盤）** — Entity, Repository, 認証, WorkDuration を使用
+- **Unit 0（共通基盤）** — Entity, Repository, 認証, WorkDuration を使用（実装済み）
 
 ## 独立性
 
-- Unit 2（社員管理）とは互いに依存しない → **並行実装可能**
+- Unit 2（社員管理）とは互いに依存しない → **並行実装可能**（Unit 2 は実装済み）
 
 ## 担当範囲
 
@@ -126,6 +137,8 @@
 
 ## 実装順序（TDD）
 
+> Entity / Repository / WorkDuration / マイグレーションは Unit 0 で実装済み。
+
 1. AttendanceService テスト → interface 定義
 2. AttendanceService 実装（clockIn / clockOut）
 3. AttendanceService 実装（getMonthlyRecords / getMonthlySummary）
@@ -137,3 +150,13 @@
 9. Frontend: S-3 勤怠履歴 + 月次集計
 10. Frontend: S-4 打刻修正
 11. Frontend: S-5 社員勤怠一覧（管理者）
+
+## 既存コード参照
+
+| 成果物 | パス |
+|--------|------|
+| Entity | `backend/src/main/java/.../entity/AttendanceRecord.java` |
+| Repository | `backend/src/main/java/.../repository/AttendanceRecordRepository.java` |
+| Value Object | `backend/src/main/java/.../domain/WorkDuration.java` |
+| VО テスト | `backend/src/test/java/.../domain/WorkDurationTest.java` |
+| Migration | `backend/src/main/resources/db/migration/V2__create_attendance_records.sql` |
