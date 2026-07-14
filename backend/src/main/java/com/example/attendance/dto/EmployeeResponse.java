@@ -9,7 +9,8 @@ public record EmployeeResponse(
         String name,
         String email,
         Role role,
-        boolean active
+        boolean active,
+        Long version
 ) {
     public static EmployeeResponse from(Employee employee) {
         return new EmployeeResponse(
@@ -18,7 +19,8 @@ public record EmployeeResponse(
                 employee.getName(),
                 employee.getEmail(),
                 employee.getRole(),
-                employee.isActive()
+                employee.isActive(),
+                employee.getVersion()
         );
     }
 }

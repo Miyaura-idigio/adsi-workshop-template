@@ -7,6 +7,7 @@ export interface EmployeeResponse {
   email: string;
   role: Role;
   active: boolean;
+  version: number;
 }
 
 export interface LoginRequest {
@@ -16,6 +17,20 @@ export interface LoginRequest {
 
 export interface LoginResponse {
   employee: EmployeeResponse;
+}
+
+export interface CreateEmployeeRequest {
+  name: string;
+  email: string;
+  password: string;
+  role: Role;
+}
+
+export interface UpdateEmployeeRequest {
+  name: string;
+  email: string;
+  role: Role;
+  version: number;
 }
 
 export interface ErrorResponse {
