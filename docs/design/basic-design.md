@@ -57,11 +57,12 @@ Controller → Service (interface) → Repository (interface) → Entity
 | フィールド | 型 | 説明 |
 |-----------|-----|------|
 | id | Long (自動採番) | 社員ID（PK） |
-| employeeCode | String | 社員コード（表示用、UNIQUE） |
+| employeeCode | String | 社員コード（自動採番 EMP001形式、UNIQUE） |
 | name | String | 氏名 |
 | email | String | メールアドレス（ログインID、UNIQUE） |
 | password | String | パスワード（BCrypt ハッシュ） |
-| role | Role (enum) | EMPLOYEE / ADMIN |
+| role | Role (enum) | EMPLOYEE / MANAGER / ADMIN |
+| managerId | Long (FK, nullable) | 上司の社員ID。MANAGER/ADMIN は null 可 |
 | active | boolean | 有効フラグ（論理削除用） |
 | version | Long | 楽観ロック用 |
 
@@ -107,6 +108,7 @@ Controller → Service (interface) → Repository (interface) → Entity
 │ - name       │                 │ - date             │
 │ - email      │                 │ - clockIn          │
 │ - role       │                 │ - clockOut         │
+│ - managerId  │                 │                    │
 │ - active     │                 │                    │
 └──────────────┘                 └────────────────────┘
                                           │
@@ -127,11 +129,12 @@ Controller → Service (interface) → Repository (interface) → Entity
 | カラム | 型 | 制約 | 説明 |
 |--------|-----|------|------|
 | id | BIGINT | PK, AUTO_INCREMENT | 社員ID |
-| employee_code | VARCHAR(20) | UNIQUE, NOT NULL | 社員コード |
+| employee_code | VARCHAR(20) | UNIQUE, NOT NULL | 社員コード（自動採番: EMP001, EMP002...） |
 | name | VARCHAR(100) | NOT NULL | 氏名 |
 | email | VARCHAR(255) | UNIQUE, NOT NULL | メールアドレス |
 | password | VARCHAR(255) | NOT NULL | パスワード（BCrypt） |
-| role | VARCHAR(20) | NOT NULL | EMPLOYEE / ADMIN |
+| role | VARCHAR(20) | NOT NULL | EMPLOYEE / MANAGER / ADMIN |
+| manager_id | BIGINT | FK(employees.id), NULL | 上司の社員ID |
 | active | BOOLEAN | NOT NULL, DEFAULT TRUE | 有効フラグ |
 | version | BIGINT | NOT NULL, DEFAULT 0 | 楽観ロック |
 | created_at | TIMESTAMP | NOT NULL | 作成日時 |
@@ -164,10 +167,12 @@ Controller → Service (interface) → Repository (interface) → Entity
 │    email            │    └────│    clock_in             │
 │    password         │         │    clock_out            │
 │    role             │         │    version              │
-│    active           │         │    created_at           │
-│    version          │         │    updated_at           │
-│    created_at       │         └─────────────────────────┘
-│    updated_at       │
+│ FK manager_id       │──┐      │    created_at           │
+│    active           │  │      │    updated_at           │
+│    version          │  │      └─────────────────────────┘
+│    created_at       │  │
+│    updated_at       │  │ 自己参照（上司）
+└─────────────────────┘◀─┘
 └─────────────────────┘
 ```
 
@@ -201,9 +206,9 @@ src/main/resources/db/migration/
 | GET | /api/attendance/today | 本日の打刻状態取得 | 要 | 全員 |
 | GET | /api/attendance/records?yearMonth= | 月次勤怠一覧（自分） | 要 | 全員 |
 | GET | /api/attendance/summary?yearMonth= | 月次集計（自分） | 要 | 全員 |
-| PUT | /api/attendance/records/{id} | 打刻修正 | 要 | 本人 or ADMIN |
-| GET | /api/admin/attendance/records | 社員勤怠一覧 | 要 | ADMIN |
-| GET | /api/admin/attendance/summary | 社員月次集計 | 要 | ADMIN |
+| PUT | /api/attendance/records/{id} | 打刻修正 | 要 | 本人 or MANAGER(部下) or ADMIN |
+| GET | /api/admin/attendance/records | 社員勤怠一覧 | 要 | MANAGER, ADMIN |
+| GET | /api/admin/attendance/summary | 社員月次集計 | 要 | MANAGER, ADMIN |
 | GET | /api/admin/employees | 社員一覧 | 要 | ADMIN |
 | POST | /api/admin/employees | 社員登録 | 要 | ADMIN |
 | GET | /api/admin/employees/{id} | 社員詳細 | 要 | ADMIN |
@@ -236,7 +241,7 @@ src/main/resources/db/migration/
 ```json
 // GET /api/attendance/summary?yearMonth=2026-07
 // Response 200
-{ "yearMonth": "2026-07", "totalWorkingDays": 15, "totalWorkingMinutes": 7200, "totalOvertimeMinutes": 600 }
+{ "yearMonth": "2026-07", "totalWorkingDays": 15, "totalActualMinutes": 7200, "totalOvertimeMinutes": 600 }
 ```
 
 ### 5.3 エラーレスポンス
@@ -251,6 +256,20 @@ src/main/resources/db/migration/
 
 ## 6. 画面設計
 
+### 6.0 表示言語
+
+画面に表示するテキストは**すべて日本語**とする。
+
+- ボタンラベル: 「ログイン」「出勤」「退勤」「保存」「キャンセル」「登録」「編集」「削除」
+- テーブルヘッダー: 「日付」「出勤時刻」「退勤時刻」「勤務時間」「残業時間」等
+- プレースホルダー: 「メールアドレスを入力」「パスワードを入力」等
+- エラーメッセージ: 「メールアドレスまたはパスワードが正しくありません」等
+- 状態表示: 「未出勤」「出勤済み」「退勤済み」
+- ナビゲーション: 「ホーム」「勤怠履歴」「社員管理」「ログアウト」
+- 確認ダイアログ: 「本当に削除しますか？」等
+
+英語表記は使用しない（URL パスや技術的な識別子を除く）。
+
 ### 6.1 画面一覧
 
 | # | 画面名 | パス | 対象ロール | 関連機能 |
@@ -259,7 +278,7 @@ src/main/resources/db/migration/
 | S-2 | 打刻（ホーム） | / | 全員 | F-1, F-2 |
 | S-3 | 勤怠履歴（自分） | /attendance | 全員 | F-5, F-6, F-7, F-8 |
 | S-4 | 打刻修正 | /attendance/edit/:id | 全員 | F-3 |
-| S-5 | 社員勤怠一覧 | /admin/attendance | ADMIN | F-4, F-5, F-6 |
+| S-5 | 社員勤怠一覧 | /admin/attendance | MANAGER, ADMIN | F-4, F-5, F-6 |
 | S-6 | 社員管理一覧 | /admin/employees | ADMIN | F-9, F-10, F-11 |
 | S-7 | 社員登録 | /admin/employees/new | ADMIN | F-9 |
 | S-8 | 社員編集 | /admin/employees/:id/edit | ADMIN | F-10 |
@@ -281,15 +300,16 @@ src/main/resources/db/migration/
           ┌─────────────┘          └──────────────┐
           ▼                                       ▼
 ┌──────────────────┐                    ┌──────────────────┐
-│ 勤怠履歴（自分）   │                    │  管理者メニュー    │
-│     (S-3)        │                    │ (ADMIN のみ表示)  │
+│ 勤怠履歴（自分）   │                    │  管理メニュー      │
+│     (S-3)        │                    │(MANAGER, ADMIN)  │
 └───────┬──────────┘                    └───┬──────────┬───┘
         │ 修正リンク                        │          │
         ▼                                   ▼          ▼
 ┌──────────────────┐              ┌────────────┐ ┌────────────┐
 │   打刻修正        │              │社員勤怠一覧 │ │社員管理一覧 │
 │    (S-4)         │              │   (S-5)    │ │   (S-6)    │
-└──────────────────┘              └────────────┘ └──┬─────┬───┘
+└──────────────────┘              │MANAGER,ADMIN│ │ ADMIN のみ │
+                                  └────────────┘ └──┬─────┬───┘
                                                     │     │
                                               ┌─────┘     └─────┐
                                               ▼                 ▼
@@ -340,14 +360,14 @@ src/main/resources/db/migration/
 | 保存ボタン | ボタン | — |
 | キャンセルボタン | ボタン | S-3 に戻る |
 
-#### S-5: 社員勤怠一覧（管理者）
+#### S-5: 社員勤怠一覧（上司・管理者）
 
 | 要素 | 種類 | 説明 |
 |------|------|------|
-| 社員選択 | ドロップダウン | 全社員表示 |
+| 社員選択 | ドロップダウン | 上司: 部下のみ / 管理者: 全社員 |
 | 年月セレクタ | ドロップダウン | デフォルト: 当月 |
 | 日別一覧テーブル | テーブル | S-3 と同構成 |
-| 修正リンク | リンク | 管理者のみ表示 |
+| 修正リンク | リンク | MANAGER（部下のみ）, ADMIN（全社員）表示 |
 | 月次集計 | 集計エリア | 出勤日数/合計勤務時間/合計残業時間 |
 
 #### S-6: 社員管理一覧
@@ -366,7 +386,7 @@ src/main/resources/db/migration/
 | 氏名 | テキスト入力 | 必須、100文字以内 |
 | メールアドレス | テキスト入力 | 必須、メール形式、重複不可 |
 | パスワード | パスワード入力 | 必須、8文字以上 |
-| ロール | セレクト | 一般社員 / 管理者 |
+| ロール | セレクト | 一般社員 / 上司 / 管理者 |
 | 登録ボタン | ボタン | — |
 | キャンセルボタン | ボタン | S-6 に戻る |
 
@@ -376,7 +396,7 @@ src/main/resources/db/migration/
 |------|------|-------------|
 | 氏名 | テキスト入力 | 必須、100文字以内（既存値プリセット） |
 | メールアドレス | テキスト入力 | 必須、メール形式 |
-| ロール | セレクト | 一般社員 / 管理者 |
+| ロール | セレクト | 一般社員 / 上司 / 管理者 |
 | 保存ボタン | ボタン | — |
 | キャンセルボタン | ボタン | S-6 に戻る |
 
@@ -427,7 +447,7 @@ else:
 |------|---------|--------|
 | 出勤打刻 | 当日レコードなし | 409 Conflict |
 | 退勤打刻 | 当日出勤済み & 未退勤 | 409 Conflict |
-| 打刻修正 | 本人 or ADMIN | 403 Forbidden |
+| 打刻修正 | 本人 or MANAGER(部下) or ADMIN | 403 Forbidden |
 
 ## 8. セキュリティ設計
 
@@ -445,7 +465,8 @@ else:
 |-------------|-----------|
 | /api/auth/** | 全員（認証不要） |
 | /api/attendance/** | 認証済みユーザー |
-| /api/admin/** | ADMIN のみ |
+| /api/admin/attendance/** | MANAGER, ADMIN |
+| /api/admin/employees/** | ADMIN のみ |
 
 ### 8.3 セキュリティ対策
 
@@ -473,7 +494,7 @@ else:
 
 | メソッド | 入力 | 出力 | 説明 |
 |---------|------|------|------|
-| create(name, email, password, role) | 社員情報 | Employee | 社員登録。メール重複時は 409 |
+| create(name, email, password, role) | 社員情報 | Employee | 社員登録。employeeCode は自動採番。メール重複時は 409 |
 | update(id, name, email, role) | 更新情報 | Employee | 社員情報更新 |
 | deactivate(id) | 社員ID | void | 論理削除（active=false） |
 | findById(id) | 社員ID | Employee | 社員取得。未存在時は 404 |
