@@ -4,6 +4,7 @@ import com.example.attendance.dto.ErrorResponse;
 import com.example.attendance.service.ConflictException;
 import com.example.attendance.service.ForbiddenException;
 import com.example.attendance.service.ResourceNotFoundException;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,6 +30,17 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
         List<ErrorResponse.FieldError> fieldErrors = ex.getBindingResult().getFieldErrors().stream()
                 .map(e -> new ErrorResponse.FieldError(e.getField(), e.getDefaultMessage()))
+                .toList();
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponse.of(400, "入力値が不正です", fieldErrors));
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ErrorResponse> handleConstraintViolation(ConstraintViolationException ex) {
+        List<ErrorResponse.FieldError> fieldErrors = ex.getConstraintViolations().stream()
+                .map(v -> new ErrorResponse.FieldError(
+                        v.getPropertyPath().toString(),
+                        v.getMessage()))
                 .toList();
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ErrorResponse.of(400, "入力値が不正です", fieldErrors));

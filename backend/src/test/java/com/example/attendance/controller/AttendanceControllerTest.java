@@ -4,6 +4,7 @@ import com.example.attendance.dto.AttendanceRecordResponse;
 import com.example.attendance.dto.EmployeeResponse;
 import com.example.attendance.dto.MonthlySummaryResponse;
 import com.example.attendance.entity.Role;
+import com.example.attendance.security.SecurityConfig;
 import com.example.attendance.service.AttendanceService;
 import com.example.attendance.service.AuthService;
 import com.example.attendance.service.ConflictException;
@@ -12,8 +13,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -30,7 +33,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(AttendanceController.class)
+@Import(SecurityConfig.class)
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
 class AttendanceControllerTest {
 
     @Autowired
@@ -112,6 +117,50 @@ class AttendanceControllerTest {
         mockMvc.perform(get("/attendance/summary").param("yearMonth", "2026-07"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalWorkingDays").value(10));
+    }
+
+    @Test
+    @DisplayName("GET /attendance/today: 当日記録あり → 200")
+    @WithMockUser(username = "user@example.com")
+    void today_exists_returns200() throws Exception {
+        when(authService.getCurrentUser("user@example.com"))
+                .thenReturn(new EmployeeResponse(1L, "EMP001", "テスト", "user@example.com", Role.EMPLOYEE, true));
+        when(attendanceService.getTodayRecord(1L))
+                .thenReturn(new AttendanceRecordResponse(1L, 1L, LocalDate.now(),
+                        LocalDateTime.now().minusHours(3), null, null, null));
+
+        mockMvc.perform(get("/attendance/today"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.employeeId").value(1));
+    }
+
+    @Test
+    @DisplayName("GET /attendance/today: 当日記録なし → 200 (null)")
+    @WithMockUser(username = "user@example.com")
+    void today_notExists_returns200Null() throws Exception {
+        when(authService.getCurrentUser("user@example.com"))
+                .thenReturn(new EmployeeResponse(1L, "EMP001", "テスト", "user@example.com", Role.EMPLOYEE, true));
+        when(attendanceService.getTodayRecord(1L)).thenReturn(null);
+
+        mockMvc.perform(get("/attendance/today"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("GET /attendance/records/{id}: 正常取得 → 200")
+    @WithMockUser(username = "user@example.com")
+    void getRecord_success_returns200() throws Exception {
+        when(authService.getCurrentUser("user@example.com"))
+                .thenReturn(new EmployeeResponse(1L, "EMP001", "テスト", "user@example.com", Role.EMPLOYEE, true));
+        when(attendanceService.getRecord(10L, 1L))
+                .thenReturn(new AttendanceRecordResponse(10L, 1L, LocalDate.of(2026, 7, 13),
+                        LocalDateTime.of(2026, 7, 13, 9, 0),
+                        LocalDateTime.of(2026, 7, 13, 18, 0), 480, 0));
+
+        mockMvc.perform(get("/attendance/records/10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(10))
+                .andExpect(jsonPath("$.employeeId").value(1));
     }
 
     @Test

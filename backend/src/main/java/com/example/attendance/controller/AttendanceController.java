@@ -6,9 +6,11 @@ import com.example.attendance.dto.UpdateRecordRequest;
 import com.example.attendance.service.AttendanceService;
 import com.example.attendance.service.AuthService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Pattern;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.YearMonth;
@@ -16,6 +18,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/attendance")
+@Validated
 public class AttendanceController {
 
     private final AttendanceService attendanceService;
@@ -51,7 +54,7 @@ public class AttendanceController {
     @GetMapping("/records")
     public ResponseEntity<List<AttendanceRecordResponse>> records(
             @AuthenticationPrincipal UserDetails user,
-            @RequestParam String yearMonth) {
+            @RequestParam @Pattern(regexp = "\\d{4}-\\d{2}", message = "yearMonth は yyyy-MM 形式で指定してください") String yearMonth) {
         Long employeeId = getEmployeeId(user);
         YearMonth ym = YearMonth.parse(yearMonth);
         return ResponseEntity.ok(attendanceService.getMonthlyRecords(employeeId, ym));
@@ -60,7 +63,7 @@ public class AttendanceController {
     @GetMapping("/summary")
     public ResponseEntity<MonthlySummaryResponse> summary(
             @AuthenticationPrincipal UserDetails user,
-            @RequestParam String yearMonth) {
+            @RequestParam @Pattern(regexp = "\\d{4}-\\d{2}", message = "yearMonth は yyyy-MM 形式で指定してください") String yearMonth) {
         Long employeeId = getEmployeeId(user);
         YearMonth ym = YearMonth.parse(yearMonth);
         return ResponseEntity.ok(attendanceService.getMonthlySummary(employeeId, ym));

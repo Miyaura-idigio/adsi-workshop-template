@@ -19,3 +19,6 @@ spring:
 server:
   servlet:
     context-path: /api
+    session:
+      cookie:
+        path: /

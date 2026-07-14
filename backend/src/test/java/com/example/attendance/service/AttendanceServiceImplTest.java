@@ -228,6 +228,88 @@ class AttendanceServiceImplTest {
     }
 
     @Nested
+    @DisplayName("getTodayRecord")
+    class GetTodayRecord {
+
+        @Test
+        @DisplayName("当日の出勤記録がある場合、レコードを返す")
+        void getTodayRecord_exists_returnsRecord() {
+            AttendanceRecord existing = AttendanceRecord.builder()
+                    .id(1L).employeeId(1L).date(LocalDate.now())
+                    .clockIn(LocalDateTime.now().minusHours(3))
+                    .build();
+            when(attendanceRepository.findByEmployeeIdAndDate(1L, LocalDate.now()))
+                    .thenReturn(Optional.of(existing));
+
+            AttendanceRecordResponse result = service.getTodayRecord(1L);
+
+            assertThat(result).isNotNull();
+            assertThat(result.employeeId()).isEqualTo(1L);
+            assertThat(result.date()).isEqualTo(LocalDate.now());
+        }
+
+        @Test
+        @DisplayName("当日の出勤記録がない場合、nullを返す")
+        void getTodayRecord_notExists_returnsNull() {
+            when(attendanceRepository.findByEmployeeIdAndDate(1L, LocalDate.now()))
+                    .thenReturn(Optional.empty());
+
+            AttendanceRecordResponse result = service.getTodayRecord(1L);
+
+            assertThat(result).isNull();
+        }
+    }
+
+    @Nested
+    @DisplayName("getRecord")
+    class GetRecord {
+
+        @Test
+        @DisplayName("本人のレコードを取得できる")
+        void getRecord_byOwner_returnsRecord() {
+            AttendanceRecord record = AttendanceRecord.builder()
+                    .id(10L).employeeId(1L).date(LocalDate.of(2026, 7, 10))
+                    .clockIn(LocalDateTime.of(2026, 7, 10, 9, 0))
+                    .clockOut(LocalDateTime.of(2026, 7, 10, 18, 0))
+                    .build();
+            when(attendanceRepository.findById(10L)).thenReturn(Optional.of(record));
+
+            Employee owner = Employee.builder().id(1L).role(Role.EMPLOYEE).build();
+            when(employeeRepository.findById(1L)).thenReturn(Optional.of(owner));
+
+            AttendanceRecordResponse result = service.getRecord(10L, 1L);
+
+            assertThat(result.id()).isEqualTo(10L);
+            assertThat(result.employeeId()).isEqualTo(1L);
+        }
+
+        @Test
+        @DisplayName("他人（非管理者）がレコードを取得する場合、403エラー")
+        void getRecord_byOtherEmployee_throwsForbidden() {
+            AttendanceRecord record = AttendanceRecord.builder()
+                    .id(10L).employeeId(2L).date(LocalDate.of(2026, 7, 10))
+                    .clockIn(LocalDateTime.of(2026, 7, 10, 9, 0))
+                    .build();
+            when(attendanceRepository.findById(10L)).thenReturn(Optional.of(record));
+
+            Employee other = Employee.builder().id(3L).role(Role.EMPLOYEE).build();
+            when(employeeRepository.findById(3L)).thenReturn(Optional.of(other));
+
+            assertThatThrownBy(() -> service.getRecord(10L, 3L))
+                    .isInstanceOf(ForbiddenException.class);
+        }
+
+        @Test
+        @DisplayName("存在しないレコードIDの場合、404エラー")
+        void getRecord_notFound_throwsNotFound() {
+            when(attendanceRepository.findById(999L)).thenReturn(Optional.empty());
+
+            assertThatThrownBy(() -> service.getRecord(999L, 1L))
+                    .isInstanceOf(ResourceNotFoundException.class);
+        }
+    }
+
+    @Nested
     @DisplayName("getMonthlyRecords")
     class GetMonthlyRecords {
 
