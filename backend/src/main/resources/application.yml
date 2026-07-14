@@ -1,0 +1,21 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:attendance
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+server:
+  servlet:
+    context-path: /api
